@@ -1,0 +1,24 @@
+{
+  "name": "devmate",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon src/app.js",
+    "start": "node src/app.js"
+  },
+  "keywords": [
+    "nodejs",
+    "javascript",
+    "mongodb",
+    "express",
+    "social",
+    "developer",
+    "collaboration"
+  ],
+  "author": "shobhit-rajvanshi",
+  "license": "ISC",
+  "description": "DevMate — a platform where developers can connect, collaborate, and build projects together.",
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}
