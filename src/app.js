@@ -1,17 +1,13 @@
 const express = require("express");
+const { checkAuth } = require("./middlewares/auth");
 
 const app = express();
 
-app.use("/", (req, res) => {
-  res.send("this is root route");
+app.use("/admin", checkAuth);
+
+app.get("/admin", (req, res) => {
+  console.log("/admin get success");
+  res.send("get all admin");
 });
 
-app.use("/profile", (req, res) => {
-  res.send("this is profile route");
-});
-
-app.use("/about", (req, res) => {
-  res.send("this is about route");
-});
-
-app.listen(3000, () => console.log("server started on port 3000"));
+app.listen(3000, () => console.log("server started at port 3000"));
