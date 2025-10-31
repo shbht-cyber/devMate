@@ -15,7 +15,7 @@ app.post("/signup", async (req, res) => {
     await user.save();
     res.send("user added successfully");
   } catch (err) {
-    res.status(400).send("something went wrong , not able to add user", err);
+    res.status(400).send("something went wrong , not able to add user" + err);
   }
 });
 
@@ -41,15 +41,37 @@ app.delete("/user", async (req, res) => {
   }
 });
 
-app.patch("/user", async (req, res) => {
-  const id = req.body.userId;
+app.patch("/user/:userId", async (req, res) => {
+  const userId = req.params?.userId;
   const data = req.body;
 
   try {
-    const user = await User.findByIdAndUpdate(id, data, { new: true });
+    const allowedKeysForUpdates = [
+      "photoUrl",
+      "about",
+      "gender",
+      "age",
+      "skills",
+    ];
+    const isUpdatesAllowed = Object.keys(req.body).every((key) =>
+      allowedKeysForUpdates.includes(key)
+    );
+
+    if (!isUpdatesAllowed) {
+      throw new Error("Updates not allowed");
+    }
+
+    if (data?.skills.length > 10) {
+      throw new Error("cant add skills more than 10");
+    }
+
+    const user = await User.findByIdAndUpdate(userId, data, {
+      new: true,
+      runValidators: true,
+    });
     res.send(user);
   } catch (err) {
-    res.status(400).send("something went wrong");
+    res.status(400).send("update failed" + err.message);
   }
 });
 
