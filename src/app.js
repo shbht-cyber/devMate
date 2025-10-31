@@ -10,6 +10,23 @@ const port = 3000;
 
 app.use(express.json());
 
+app.post("/login", async (req, res) => {
+  try {
+    const { emailId, password } = req.body;
+    const user = await User.findOne({ emailId: emailId });
+    if (!user) throw new Error("Invalid credentials");
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) throw new Error("Invalid credentials");
+    else {
+      res.send("User logged in successfully");
+    }
+  } catch (err) {
+    res.status(400).send("ERROR: " + err.message);
+  }
+});
+
 app.post("/signup", async (req, res) => {
   try {
     const { firstName, lastName, emailId, password } = req.body;
