@@ -1,12 +1,10 @@
 const express = require("express");
 const cookieParser = require("cookie-parser");
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
 
-const User = require("./models/user");
 const { connectDB } = require("./config/database");
-const { validateSignUpData } = require("./utils/validations");
-const { userAuth } = require("./middlewares/auth");
+const { authRouter } = require("./routes/auth");
+const { profileRouter } = require("./routes/profile");
+const { requestRouter } = require("./routes/requests");
 
 const app = express();
 const port = 3000;
@@ -14,69 +12,13 @@ const port = 3000;
 app.use(express.json());
 app.use(cookieParser());
 
-//signup api
-app.post("/signup", async (req, res) => {
-  try {
-    const { firstName, lastName, emailId, password } = req.body;
-    validateSignUpData(req);
-
-    const hashPassword = await bcrypt.hash(password, 10);
-
-    const user = new User({
-      firstName,
-      lastName,
-      emailId,
-      password: hashPassword,
-    });
-
-    await user.save();
-    res.send("User registered successfully");
-  } catch (err) {
-    res.status(400).send("Error: " + err.message);
-  }
-});
-
-// login api
-app.post("/login", async (req, res) => {
-  try {
-    const { emailId, password } = req.body;
-
-    const user = await User.findOne({ emailId: emailId });
-    if (!user) throw new Error("Invalid credentials");
-
-    const isPasswordValid = await user.validatePassword(password);
-
-    if (isPasswordValid) {
-      const token = await user.getJwt();
-      res.cookie("token", token);
-
-      res.send("User logged in successfully");
-    } else throw new Error("Invalid credentials");
-  } catch (err) {
-    res.status(400).send("Error: " + err.message);
-  }
-});
-
-// get profile api
-app.get("/profile", userAuth, async (req, res) => {
-  try {
-    const user = req.user;
-    res.send(user);
-  } catch (err) {
-    res.status(400).send("Error: " + err.message);
-  }
-});
-
-// send connection request api
-app.get("/sendConnectionRequest", userAuth, async (req, res) => {
-  const user = req.user;
-
-  res.send(user.firstName + " sent connection request");
-});
+app.use("/", authRouter);
+app.use("/", profileRouter);
+app.use("/", requestRouter);
 
 connectDB()
   .then(() => {
-    console.log("database connected successfully");
+    console.log("database connected successfully!!");
     app.listen(port, () => console.log(`server started at port ${port}`));
   })
-  .catch((err) => console.log("database cant be connected", err));
+  .catch((err) => console.log("database cant be connected , Error: ", err));
