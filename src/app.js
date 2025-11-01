@@ -1,43 +1,27 @@
 const express = require("express");
-const { connectDB } = require("./config/database");
-const User = require("./models/user");
-const { validateSignUpData } = require("./utils/validations");
+const cookieParser = require("cookie-parser");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+
+const User = require("./models/user");
+const { connectDB } = require("./config/database");
+const { validateSignUpData } = require("./utils/validations");
+const { userAuth } = require("./middlewares/auth");
 
 const app = express();
-
 const port = 3000;
 
 app.use(express.json());
+app.use(cookieParser());
 
-app.post("/login", async (req, res) => {
-  try {
-    const { emailId, password } = req.body;
-    const user = await User.findOne({ emailId: emailId });
-    if (!user) throw new Error("Invalid credentials");
-
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-
-    if (!isPasswordValid) throw new Error("Invalid credentials");
-    else {
-      res.send("User logged in successfully");
-    }
-  } catch (err) {
-    res.status(400).send("ERROR: " + err.message);
-  }
-});
-
+//signup api
 app.post("/signup", async (req, res) => {
   try {
     const { firstName, lastName, emailId, password } = req.body;
-
-    //validate input
     validateSignUpData(req);
 
-    //encrypt password
     const hashPassword = await bcrypt.hash(password, 10);
 
-    //creating new instance of User model
     const user = new User({
       firstName,
       lastName,
@@ -46,75 +30,50 @@ app.post("/signup", async (req, res) => {
     });
 
     await user.save();
-    res.send("user added successfully");
+    res.send("User registered successfully");
   } catch (err) {
-    res.status(400).send("ERROR: " + err.message);
+    res.status(400).send("Error: " + err.message);
   }
 });
 
-app.get("/user", async (req, res) => {
+// login api
+app.post("/login", async (req, res) => {
   try {
-    const user = await User.find({ emailId: req.body.emailId });
-    if (user.length === 0) {
-      res.status(404).send("user not found");
-    } else {
-      res.send(user);
-    }
+    const { emailId, password } = req.body;
+
+    const user = await User.findOne({ emailId: emailId });
+    if (!user) throw new Error("Invalid credentials");
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (isPasswordValid) {
+      const token = jwt.sign({ _id: user._id }, "DEVMATEShobhit@911830", {
+        expiresIn: 5,
+      });
+      res.cookie("token", token);
+
+      res.send("User logged in successfully");
+    } else throw new Error("Invalid credentials");
   } catch (err) {
-    res.status(500).send("something went wrong");
+    res.status(400).send("Error: " + err.message);
   }
 });
 
-app.delete("/user", async (req, res) => {
+// get profile api
+app.get("/profile", userAuth, async (req, res) => {
   try {
-    await User.findByIdAndDelete(req.body.userId);
-    res.send("user deleted successfully");
-  } catch (err) {
-    res.status(400).send("something went wrong");
-  }
-});
-
-app.patch("/user/:userId", async (req, res) => {
-  const userId = req.params?.userId;
-  const data = req.body;
-
-  try {
-    const allowedKeysForUpdates = [
-      "photoUrl",
-      "about",
-      "gender",
-      "age",
-      "skills",
-    ];
-    const isUpdatesAllowed = Object.keys(req.body).every((key) =>
-      allowedKeysForUpdates.includes(key)
-    );
-
-    if (!isUpdatesAllowed) {
-      throw new Error("Updates not allowed");
-    }
-
-    if (data?.skills.length > 10) {
-      throw new Error("cant add skills more than 10");
-    }
-
-    const user = await User.findByIdAndUpdate(userId, data, {
-      new: true,
-      runValidators: true,
-    });
+    const user = req.user;
     res.send(user);
   } catch (err) {
-    res.status(400).send("update failed" + err.message);
+    res.status(400).send("Error: " + err.message);
   }
 });
 
-app.get("/feed", async (req, res) => {
-  try {
-    const users = await User.find({});
-    res.send(users);
-  } catch (err) {
-    res.status(400).send("something went wrong");
-  }
+// send connection request api
+app.get("/sendConnectionRequest", userAuth, async (req, res) => {
+  const user = req.user;
+
+  res.send(user.firstName + " sent connection request");
 });
 
 connectDB()

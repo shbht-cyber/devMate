@@ -1,15 +1,24 @@
-function checkAuth(req, res, next) {
-  console.log("checking auth");
+const User = require("../models/user");
+const jwt = require("jsonwebtoken");
 
-  const token = "shobhit";
-  const isAuth = token === "shobhit";
+async function userAuth(req, res, next) {
+  try {
+    const { token } = req.cookies;
+    if (!token) throw new Error("Invalid token");
 
-  if (isAuth) {
-    console.log("auth successfull");
+    const decodedToken = await jwt.verify(token, "DEVMATEShobhit@911830");
+    const { _id } = decodedToken;
+
+    const user = await User.findById(_id);
+    if (!user) throw new Error("User does not exist");
+
+    req.user = user;
     next();
-  } else res.status(401).send("aut not provided");
+  } catch (err) {
+    res.status(400).send("Error: " + err.message);
+  }
 }
 
 module.exports = {
-  checkAuth,
+  userAuth,
 };
