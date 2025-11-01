@@ -59,10 +59,18 @@ const userSchema = new mongoose.Schema(
     about: {
       type: String,
       default: "in search of some developer friend",
+      maxLength: 50,
     },
 
     skills: {
       type: [String],
+      validate(skills) {
+        if (skills.length > 20) throw new Error("skills cant be more than 20");
+
+        const allValidLength = skills.every((skill) => skill.length <= 15);
+        if (!allValidLength)
+          throw new Error("individual skill length cant be more than 15");
+      },
     },
   },
   {
