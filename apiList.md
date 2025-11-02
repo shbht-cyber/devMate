@@ -14,8 +14,7 @@
 
 ## connectionRequestRouter
 
--Post : /request/send/interested/:userId
--Post : /request/send/ignored/:userId
+-Post : /request/send/:status/:userId (status = "interested" or "ignored")
 -Post : /request/review/accepted/:requestId
 -Post : /request/review/rejected/:requestId
 
@@ -24,3 +23,5 @@
 -Get : /user/connections
 -Get : /user/requests
 -Get : /user/feed
+
+status = "interested" , "ignored" , "accepted" , "rejected"

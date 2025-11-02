@@ -2,7 +2,6 @@ const express = require("express");
 const bcrypt = require("bcrypt");
 const validator = require("validator");
 
-const User = require("../models/user");
 const { userAuth } = require("../middlewares/auth");
 const { validateEditProfileData } = require("../utils/validations");
 
@@ -77,7 +76,7 @@ profileRouter.patch("/profile/edit/password", userAuth, async (req, res) => {
     await loggedInUser.save();
 
     res.json({
-      message: "Password updated successfully ✅",
+      message: "Password updated successfully!",
     });
   } catch (err) {
     res.status(500).json({ error: "Internal Server Error: " + err.message });
