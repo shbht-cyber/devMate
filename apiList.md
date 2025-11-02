@@ -20,7 +20,7 @@
 ## userRouter
 
 -Get : /user/connections
--Get : /user/requests
+-Get : /user/requests/received
 -Get : /user/feed
 
 status = "interested" , "ignored" , "accepted" , "rejected"
