@@ -32,6 +32,35 @@ userRouter.get("/user/requests/received", userAuth, async (req, res) => {
   }
 });
 
+// get all the accepted connections for a logged in user
+userRouter.get("/user/connections", userAuth, async (req, res) => {
+  try {
+    const loggedInUser = req.user;
+
+    // shobhit => virat => accepted
+    // virat => dhoni => accepted
+    const connectionRequest = await ConnectionRequest.find({
+      $or: [
+        { toUserId: loggedInUser._id, status: "accepted" },
+        { fromUserId: loggedInUser._id, status: "accepted" },
+      ],
+    }).populate("fromUserId", [
+      "firstName",
+      "lastName",
+      "age",
+      "photoUrl",
+      "gender",
+      "skills",
+      "about",
+    ]);
+
+    const data = connectionRequest.map((row) => row.fromUserId);
+    res.json({ data });
+  } catch (err) {
+    res.status(400).send("Error: " + err.message);
+  }
+});
+
 module.exports = {
   userRouter,
 };
