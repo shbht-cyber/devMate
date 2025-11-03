@@ -8,8 +8,15 @@ const { requestRouter } = require("./routes/requests");
 const { userRouter } = require("./routes/user");
 
 const app = express();
+const cors = require("cors");
 const port = 3000;
 
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(cookieParser());
 
