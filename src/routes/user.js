@@ -101,9 +101,28 @@ userRouter.get("/user/feed", userAuth, async (req, res) => {
       .skip(skip)
       .limit(limit);
 
-    res.send(feedUsers);
+    const totalUsers = await User.countDocuments({
+      _id: { $nin: Array.from(hideUsersFromFeed) },
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "User feed fetched successfully",
+      data: feedUsers,
+      meta: {
+        totalUsers,
+        currentPage: page,
+        limit,
+        totalPages: Math.ceil(totalUsers / limit),
+        hasNextPage: page * limit < totalUsers,
+      },
+    });
   } catch (err) {
-    res.status(400).send("Error: " + err.message);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch user feed",
+      error: err.message,
+    });
   }
 });
 

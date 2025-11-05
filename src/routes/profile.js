@@ -10,17 +10,41 @@ const profileRouter = express.Router();
 // get profile api
 profileRouter.get("/profile/view", userAuth, async (req, res) => {
   try {
-    const user = req.user;
-    res.send(user);
+    const loggedInUser = req.user;
+
+    return res.status(200).json({
+      success: true,
+      message: "profile data has been fetched successfully!",
+      data: {
+        firstName: loggedInUser.firstName,
+        lastName: loggedInUser.lastName,
+        email: loggedInUser.emailId,
+        age: loggedInUser.age,
+        gender: loggedInUser.gender,
+        about: loggedInUser.about,
+        skills: loggedInUser.skills,
+        photoUrl: loggedInUser.photoUrl,
+      },
+    });
   } catch (err) {
-    return res.status(400).json({ error: err.message });
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong while fetching profile.",
+      error: err.message,
+    });
   }
 });
 
 //edit profile api
 profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
   try {
-    if (!validateEditProfileData(req)) throw new Error("Invalid edit request");
+    // Validate incoming data
+    if (!validateEditProfileData(req)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid edit profile request. Please send valid data.",
+      });
+    }
 
     const loggedInUser = req.user;
 
@@ -29,45 +53,69 @@ profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
     );
     await loggedInUser.save();
 
-    res.json({
-      message: `${loggedInUser.firstName}, your profile has beed updated successfully`,
-      data: loggedInUser,
+    return res.status(200).json({
+      success: true,
+      message: `${loggedInUser.firstName}, your profile has been updated successfully.`,
+      data: {
+        firstName: loggedInUser.firstName,
+        lastName: loggedInUser.lastName,
+        email: loggedInUser.emailId,
+        age: loggedInUser.age,
+        gender: loggedInUser.gender,
+        about: loggedInUser.about,
+        skills: loggedInUser.skills,
+        photoUrl: loggedInUser.photoUrl,
+      },
     });
   } catch (err) {
-    throw res.status(400).send("Error: " + err.message);
+    console.error("Edit profile error:", err.message);
+
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong while updating profile.",
+      error: err.message,
+    });
   }
 });
 
-// get profile api
+// edit password api
 profileRouter.patch("/profile/edit/password", userAuth, async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
 
     if (!currentPassword || !newPassword) {
-      return res.status(400).json({ error: "Both fields are required" });
+      return res.status(400).json({
+        success: false,
+        error: "Current password and new password are required.",
+      });
     }
 
     const loggedInUser = req.user;
 
     if (currentPassword === newPassword) {
-      return res
-        .status(400)
-        .json({ error: "Current and new password cannot be the same" });
+      return res.status(400).json({
+        success: false,
+        error: "New password must be different from current password.",
+      });
     }
 
     if (!validator.isStrongPassword(newPassword)) {
-      return res
-        .status(400)
-        .json({ error: "New password is not strong enough" });
+      return res.status(400).json({
+        success: false,
+        error:
+          "New password must be at least 8 characters long and include uppercase, lowercase, number & symbol.",
+      });
     }
 
     const isCurrentPasswordCorrect = await loggedInUser.validatePassword(
       currentPassword
     );
+
     if (!isCurrentPasswordCorrect) {
-      return res
-        .status(400)
-        .json({ error: "Incorrect current password. Try again." });
+      return res.status(401).json({
+        success: false,
+        error: "Current password is incorrect.",
+      });
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
@@ -75,11 +123,16 @@ profileRouter.patch("/profile/edit/password", userAuth, async (req, res) => {
     loggedInUser.password = hashedPassword;
     await loggedInUser.save();
 
-    res.json({
-      message: "Password updated successfully!",
+    return res.status(200).json({
+      success: true,
+      message: "Your password has been updated successfully.",
     });
   } catch (err) {
-    res.status(500).json({ error: "Internal Server Error: " + err.message });
+    return res.status(500).json({
+      success: false,
+      error: "Internal Server Error",
+      detail: err.message,
+    });
   }
 });
 
