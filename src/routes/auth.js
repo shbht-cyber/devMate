@@ -10,8 +10,19 @@ const authRouter = express.Router();
 // signup api
 authRouter.post("/signup", async (req, res) => {
   try {
-    const { firstName, lastName, emailId, password } = req.body;
+    const { firstName, lastName, emailId, password, gender, photoUrl } =
+      req.body;
     validateSignUpData(req);
+
+    let userDefaultPhoto = "";
+    if (!photoUrl) {
+      userDefaultPhoto =
+        gender.toLowerCase() == "female"
+          ? "https://icons.veryicon.com/png/o/miscellaneous/user-avatar/user-avatar-female-9.png"
+          : "https://icons.veryicon.com/png/o/miscellaneous/user-avatar/user-avatar-male-5.png";
+    } else {
+      userDefaultPhoto = photoUrl;
+    }
 
     const hashPassword = await bcrypt.hash(password, 10);
 
@@ -20,6 +31,8 @@ authRouter.post("/signup", async (req, res) => {
       lastName,
       emailId,
       password: hashPassword,
+      gender,
+      photoUrl: userDefaultPhoto,
     });
 
     await user.save();

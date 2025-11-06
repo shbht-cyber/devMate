@@ -26,12 +26,26 @@ userRouter.get("/user/requests/received", userAuth, async (req, res) => {
       status: "interested",
     }).populate("fromUserId", fieldsToSend);
 
-    res.json({
-      message: "Data fetched successfully",
-      data: connectionRequests,
+    const data = connectionRequests.map((item) => {
+      return {
+        _id: item._id,
+        fromUserId: item.fromUserId,
+        status: item.status,
+      };
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Requests fetched successfully.",
+      toUserId: loggedInUser._id,
+      data: data,
     });
   } catch (err) {
-    res.status(400).send("Error: " + err.message);
+    return res.status(500).json({
+      success: false,
+      error: "Failed to fetch requests.",
+      detail: err.message,
+    });
   }
 });
 
@@ -51,16 +65,26 @@ userRouter.get("/user/connections", userAuth, async (req, res) => {
       .populate("fromUserId", fieldsToSend)
       .populate("toUserId", fieldsToSend);
 
-    const data = connectionRequest.map((row) => {
+    const connections = connectionRequest.map((row) => {
       if (row.fromUserId._id.toString() == loggedInUser._id.toString()) {
         return row.toUserId;
       }
 
       return row.fromUserId;
     });
-    res.json({ data });
+
+    return res.status(200).json({
+      success: true,
+      message: "Connections fetched successfully.",
+      count: connections.length,
+      data: connections,
+    });
   } catch (err) {
-    res.status(400).send("Error: " + err.message);
+    return res.status(500).json({
+      success: false,
+      error: "Failed to fetch connections.",
+      detail: err.message,
+    });
   }
 });
 
