@@ -58,7 +58,7 @@ const userSchema = new mongoose.Schema(
     about: {
       type: String,
       default: "in search of some developer friend",
-      maxLength: 50,
+      maxLength: 500,
     },
 
     skills: {

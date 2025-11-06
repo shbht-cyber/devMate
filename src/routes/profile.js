@@ -16,9 +16,10 @@ profileRouter.get("/profile/view", userAuth, async (req, res) => {
       success: true,
       message: "profile data has been fetched successfully!",
       data: {
+        _id: loggedInUser._id,
         firstName: loggedInUser.firstName,
         lastName: loggedInUser.lastName,
-        email: loggedInUser.emailId,
+        emailId: loggedInUser.emailId,
         age: loggedInUser.age,
         gender: loggedInUser.gender,
         about: loggedInUser.about,
@@ -57,9 +58,10 @@ profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
       success: true,
       message: `${loggedInUser.firstName}, your profile has been updated successfully.`,
       data: {
+        _id: loggedInUser._id,
         firstName: loggedInUser.firstName,
         lastName: loggedInUser.lastName,
-        email: loggedInUser.emailId,
+        emailId: loggedInUser.emailId,
         age: loggedInUser.age,
         gender: loggedInUser.gender,
         about: loggedInUser.about,
@@ -81,12 +83,20 @@ profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
 // edit password api
 profileRouter.patch("/profile/edit/password", userAuth, async (req, res) => {
   try {
-    const { currentPassword, newPassword } = req.body;
+    const { currentPassword, newPassword, confirmPassword } = req.body;
 
-    if (!currentPassword || !newPassword) {
+    if (!currentPassword || !newPassword || !confirmPassword) {
       return res.status(400).json({
         success: false,
-        error: "Current password and new password are required.",
+        error:
+          "Current password, new password and confirm passwords are required.",
+      });
+    }
+
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({
+        success: false,
+        error: "New password and confirm password doesnt match",
       });
     }
 
