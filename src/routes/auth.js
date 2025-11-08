@@ -58,7 +58,7 @@ authRouter.post("/signup", async (req, res) => {
     });
   } catch (err) {
     res.status(500).json({
-      error: "Internal server error. Please try again later.",
+      error: err.message || "Internal server error. Please try again later.",
     });
   }
 });
