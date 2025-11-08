@@ -93,8 +93,8 @@ userRouter.get("/user/feed", userAuth, async (req, res) => {
   try {
     //pagination
     const page = parseInt(req.query.page) || 1;
-    let limit = parseInt(req.query.limit) || 10;
-    limit = limit > 50 ? 50 : limit;
+    let limit = parseInt(req.query.limit) || 100;
+    limit = limit > 100 ? 100 : limit;
     const skip = (page - 1) * limit;
     // a logged in user should not see these cards
     //1. his own card

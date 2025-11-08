@@ -10,7 +10,7 @@ const authRouter = express.Router();
 // signup api
 authRouter.post("/signup", async (req, res) => {
   try {
-    const { firstName, lastName, emailId, password, gender, photoUrl } =
+    const { firstName, lastName, emailId, password, gender, age, photoUrl } =
       req.body;
     validateSignUpData(req);
 
@@ -31,14 +31,35 @@ authRouter.post("/signup", async (req, res) => {
       lastName,
       emailId,
       password: hashPassword,
+      age,
       gender,
       photoUrl: userDefaultPhoto,
     });
 
-    await user.save();
-    res.send("User registered successfully");
+    const savedUser = await user.save();
+    const token = await savedUser.getJwt();
+    res.cookie("token", token, {
+      expires: new Date(Date.now() + 24 * 3600000), // clear after 24 hr
+    });
+
+    res.status(200).json({
+      message: "Registration successful!",
+      data: {
+        _id: savedUser._id,
+        firstName: savedUser.firstName,
+        lastName: savedUser.lastName,
+        emailId: savedUser.emailId,
+        about: savedUser.about,
+        skills: savedUser.skills,
+        age: savedUser.age,
+        gender: savedUser.gender,
+        photoUrl: savedUser.photoUrl,
+      },
+    });
   } catch (err) {
-    res.status(400).send("Error: " + err.message);
+    res.status(500).json({
+      error: "Internal server error. Please try again later.",
+    });
   }
 });
 
@@ -79,7 +100,7 @@ authRouter.post("/login", async (req, res) => {
 
     res.status(200).json({
       message: "Login successful!",
-      user: {
+      data: {
         _id: user._id,
         firstName: user.firstName,
         lastName: user.lastName,

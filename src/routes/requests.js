@@ -53,7 +53,12 @@ requestRouter.post(
           status === "interested"
             ? req.user.firstName + " is interested in " + toUser.firstName
             : req.user.firstName + " ignored " + toUser.firstName,
-        data,
+        data: {
+          _id: data._id,
+          fromUserId: data.fromUserId,
+          toUserId: data.toUserId,
+          status: data.status,
+        },
       });
     } catch (err) {
       res.status(400).send("Error: " + err.message);
@@ -95,7 +100,12 @@ requestRouter.post(
       const data = await connectionRequest.save();
       res.json({
         message: "Connection request " + status + " successfully!",
-        data,
+        data: {
+          _id: data._id,
+          fromUserId: data.fromUserId,
+          toUserId: data.toUserId,
+          status: data.status,
+        },
       });
     } catch (err) {
       res.status(400).send("Error: " + err.message);

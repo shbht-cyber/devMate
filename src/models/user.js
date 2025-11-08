@@ -10,11 +10,12 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
       minLength: 3,
-      maxLength: 15,
+      maxLength: 20,
     },
 
     lastName: {
       type: String,
+      required: true,
       maxLength: 15,
     },
 
@@ -33,6 +34,7 @@ const userSchema = new mongoose.Schema(
 
     age: {
       type: Number,
+      required: true,
       min: 18,
       max: 100,
     },
@@ -40,6 +42,7 @@ const userSchema = new mongoose.Schema(
     gender: {
       type: String,
       lowercase: true,
+      required: true,
       enum: {
         values: ["male", "female", "other"],
         message: "{VALUE} is not a valid gender (male , female and other)",
