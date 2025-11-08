@@ -4,6 +4,9 @@ const validator = require("validator");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 
+const defaultAbout =
+  "I joined DevMate to find developer friends who enjoy building cool stuff and having fun along the way.I believe great ideas start with conversations, so feel free to reach out anytime. Let’s brainstorm, learn together, and maybe ship something awesome. Coffee + code + creativity = the perfect combination. Let’s connect!";
+
 const userSchema = new mongoose.Schema(
   {
     firstName: {
@@ -60,7 +63,7 @@ const userSchema = new mongoose.Schema(
 
     about: {
       type: String,
-      default: "in search of some developer friend",
+      default: defaultAbout,
       maxLength: 500,
     },
 
