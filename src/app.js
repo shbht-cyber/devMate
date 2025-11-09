@@ -13,7 +13,7 @@ const port = 3000;
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: ["http://localhost:5173", "http://192.168.1.4:5173"],
     credentials: true,
   })
 );
@@ -28,6 +28,8 @@ app.use("/", userRouter);
 connectDB()
   .then(() => {
     console.log("database connected successfully!!");
-    app.listen(port, () => console.log(`server started at port ${port}`));
+    app.listen(port, "0.0.0.0", () =>
+      console.log(`server started at port ${port}`)
+    );
   })
   .catch((err) => console.log("database cant be connected , Error: ", err));
