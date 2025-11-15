@@ -9,7 +9,7 @@ const { userRouter } = require("./routes/user");
 
 const app = express();
 const cors = require("cors");
-const port = 3000;
+require("dotenv").config();
 
 app.use(
   cors({
@@ -28,8 +28,8 @@ app.use("/", userRouter);
 connectDB()
   .then(() => {
     console.log("database connected successfully!!");
-    app.listen(port, "0.0.0.0", () =>
-      console.log(`server started at port ${port}`)
+    app.listen(process.env.PORT, "0.0.0.0", () =>
+      console.log(`server started at port ${process.env.PORT}`)
     );
   })
   .catch((err) => console.log("database cant be connected , Error: ", err));
