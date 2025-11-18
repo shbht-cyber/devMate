@@ -6,10 +6,13 @@ const { authRouter } = require("./routes/auth");
 const { profileRouter } = require("./routes/profile");
 const { requestRouter } = require("./routes/requests");
 const { userRouter } = require("./routes/user");
+const initializeSocket = require("./utils/socket");
 
 const app = express();
 const cors = require("cors");
 require("dotenv").config();
+
+const http = require("http");
 
 app.use(
   cors({
@@ -25,10 +28,13 @@ app.use("/", profileRouter);
 app.use("/", requestRouter);
 app.use("/", userRouter);
 
+const server = http.createServer(app);
+initializeSocket(server);
+
 connectDB()
   .then(() => {
     console.log("database connected successfully!!");
-    app.listen(process.env.PORT, "0.0.0.0", () =>
+    server.listen(process.env.PORT, "0.0.0.0", () =>
       console.log(`server started at port ${process.env.PORT}`)
     );
   })
