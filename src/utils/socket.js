@@ -74,6 +74,7 @@ const initializeSocket = (server) => {
             firstName,
             lastName,
             photoUrl,
+            userId,
             text,
           });
         } catch (err) {
