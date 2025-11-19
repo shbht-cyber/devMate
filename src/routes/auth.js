@@ -133,6 +133,13 @@ authRouter.post("/logout", (req, res) => {
     expires: new Date(Date.now()),
   });
 
+  res.cookie("token", "", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+    expires: new Date(0),
+  });
+
   res.json({ message: "user logout successfully" });
 });
 
