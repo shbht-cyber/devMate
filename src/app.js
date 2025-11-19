@@ -20,7 +20,7 @@ app.use(
     origin: [
       "http://localhost:5173",
       "http://192.168.1.4:5173",
-      "https://devmate-frontend.onrender.com/",
+      "https://devmate-frontend.onrender.com",
     ],
     credentials: true,
   })
