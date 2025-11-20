@@ -4,15 +4,17 @@ const bcrypt = require("bcrypt");
 const User = require("../models/user");
 const { validateSignUpData } = require("../utils/validations");
 const validator = require("validator");
+const upload = require("../utils/multer");
 
 const authRouter = express.Router();
 
 // signup api
-authRouter.post("/signup", async (req, res) => {
+authRouter.post("/signup", upload.single("photo"), async (req, res) => {
   try {
-    const { firstName, lastName, emailId, password, gender, age, photoUrl } =
-      req.body;
+    const { firstName, lastName, emailId, password, gender, age } = req.body;
     validateSignUpData(req);
+
+    const photoUrl = req.file.path;
 
     let userDefaultPhoto = "";
     if (!photoUrl) {
