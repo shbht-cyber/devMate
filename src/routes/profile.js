@@ -4,6 +4,7 @@ const validator = require("validator");
 
 const { userAuth } = require("../middlewares/auth");
 const { validateEditProfileData } = require("../utils/validations");
+const upload = require("../utils/multer");
 
 const profileRouter = express.Router();
 
@@ -37,48 +38,58 @@ profileRouter.get("/profile/view", userAuth, async (req, res) => {
 });
 
 //edit profile api
-profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
-  try {
-    // Validate incoming data
-    if (!validateEditProfileData(req)) {
-      return res.status(400).json({
+profileRouter.patch(
+  "/profile/edit",
+  userAuth,
+  upload.single("photo"),
+  async (req, res) => {
+    try {
+      // Validate incoming data
+      if (!validateEditProfileData(req)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid edit profile request. Please send valid data.",
+        });
+      }
+
+      const loggedInUser = req.user;
+
+      Object.keys(req.body).forEach(
+        (field) => (loggedInUser[field] = req.body[field])
+      );
+
+      if (req.file && req.file.path) {
+        loggedInUser.photoUrl = req.file.path;
+      }
+
+      await loggedInUser.save();
+
+      return res.status(200).json({
+        success: true,
+        message: `${loggedInUser.firstName}, your profile has been updated successfully.`,
+        data: {
+          _id: loggedInUser._id,
+          firstName: loggedInUser.firstName,
+          lastName: loggedInUser.lastName,
+          emailId: loggedInUser.emailId,
+          age: loggedInUser.age,
+          gender: loggedInUser.gender,
+          about: loggedInUser.about,
+          skills: loggedInUser.skills,
+          photoUrl: loggedInUser.photoUrl,
+        },
+      });
+    } catch (err) {
+      console.error("Edit profile error:", err.message);
+
+      return res.status(500).json({
         success: false,
-        message: "Invalid edit profile request. Please send valid data.",
+        message: "Something went wrong while updating profile.",
+        error: err.message,
       });
     }
-
-    const loggedInUser = req.user;
-
-    Object.keys(req.body).forEach(
-      (field) => (loggedInUser[field] = req.body[field])
-    );
-    await loggedInUser.save();
-
-    return res.status(200).json({
-      success: true,
-      message: `${loggedInUser.firstName}, your profile has been updated successfully.`,
-      data: {
-        _id: loggedInUser._id,
-        firstName: loggedInUser.firstName,
-        lastName: loggedInUser.lastName,
-        emailId: loggedInUser.emailId,
-        age: loggedInUser.age,
-        gender: loggedInUser.gender,
-        about: loggedInUser.about,
-        skills: loggedInUser.skills,
-        photoUrl: loggedInUser.photoUrl,
-      },
-    });
-  } catch (err) {
-    console.error("Edit profile error:", err.message);
-
-    return res.status(500).json({
-      success: false,
-      message: "Something went wrong while updating profile.",
-      error: err.message,
-    });
   }
-});
+);
 
 // edit password api
 profileRouter.patch("/profile/edit/password", userAuth, async (req, res) => {
