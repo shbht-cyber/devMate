@@ -20,7 +20,7 @@
   "description": "DevMate — a platform where developers can connect, collaborate, and build projects together.",
   "dependencies": {
     "bcrypt": "^6.0.0",
-    "cloudinary": "^2.8.0",
+    "cloudinary": "^1.41.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
