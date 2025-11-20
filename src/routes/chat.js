@@ -2,6 +2,7 @@ const express = require("express");
 
 const { userAuth } = require("../middlewares/auth");
 const { Chat } = require("../models/chat");
+const User = require("../models/user");
 
 const chatRouter = express.Router();
 
@@ -27,7 +28,19 @@ chatRouter.get("/user/chat/:targetUserId", userAuth, async (req, res) => {
       await chat.save();
     }
 
-    res.json(chat);
+    const sender = req.user;
+    const receiver = await User.findOne({ _id: targetUserId });
+
+    const data = {
+      ...chat.toJSON(),
+      receiver: {
+        firstName: receiver.firstName,
+        lastName: receiver.lastName,
+        photoUrl: receiver.photoUrl,
+      },
+    };
+
+    res.json(data);
   } catch (err) {
     return res.status(500).json({
       success: false,
