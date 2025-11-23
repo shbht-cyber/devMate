@@ -54,9 +54,17 @@ profileRouter.patch(
 
       const loggedInUser = req.user;
 
-      Object.keys(req.body).forEach(
-        (field) => (loggedInUser[field] = req.body[field])
-      );
+      Object.keys(req.body).forEach((field) => {
+        if (field === "skills") {
+          try {
+            loggedInUser.skills = JSON.parse(req.body.skills || "[]");
+          } catch (err) {
+            loggedInUser.skills = [];
+          }
+        } else {
+          loggedInUser[field] = req.body[field];
+        }
+      });
 
       if (req.file && req.file.path) {
         loggedInUser.photoUrl = req.file.path;
